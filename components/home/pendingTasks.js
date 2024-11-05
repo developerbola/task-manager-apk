@@ -1,8 +1,18 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { api } from "../../api/api";
 
 const pendingTasks = ({ sortedTasks, setUpdate }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer);
+  }, []);
+
   const isCompleted = (id) => {
     api.makeCompleted(id);
     setUpdate(true);
@@ -24,15 +34,17 @@ const pendingTasks = ({ sortedTasks, setUpdate }) => {
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
-        <Text style={styles.title}>{weekdays[new Date().getDay()]}'s Tasks</Text>
         <Text style={styles.title}>
-          {new Date().getHours() < 10
-            ? "0" + new Date().getHours()
-            : new Date().getHours()}
+          {weekdays[new Date().getDay()]}'s Tasks
+        </Text>
+        <Text style={styles.title}>
+          {currentTime.getHours() < 10
+            ? "0" + currentTime.getHours()
+            : currentTime.getHours()}
           :
-          {new Date().getMinutes() < 10
-            ? "0" + new Date().getMinutes()
-            : new Date().getMinutes()}
+          {currentTime.getMinutes() < 10
+            ? "0" + currentTime.getMinutes()
+            : currentTime.getMinutes()}
         </Text>
       </View>
       <View style={styles.tasksWrapper}>

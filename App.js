@@ -1,27 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  ImageBackground,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-} from "react-native";
+import { ImageBackground, ScrollView, StyleSheet } from "react-native";
 import { Top, PendingTasks, AddTask } from "./components/components";
 import { api } from "./api/api";
-import NotificationExample from "./components/home/notification";
 import { StatusBar } from "expo-status-bar";
+import showNotification from "./helpers/showNotification";
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
-  const [refresh, setRefresh] = useState(false);
   const [update, setUpdate] = useState(false);
-
-  const onRefresh = () => {
-    setRefresh(true);
-    setTimeout(() => {
-      setRefresh(false);
-    }, 1000);
-  };
-
+  const [time, setTime] = useState(
+    new Date().getHours() + ":" + (parseInt(new Date().getMinutes()) + 1)
+  );
   const getTasks = async () => {
     const res = await api.getTasks();
     setTasks(res || []);
@@ -29,12 +18,11 @@ const App = () => {
 
   useEffect(() => {
     getTasks();
-    setRefresh(false);
     setUpdate(false);
-  }, [refresh, update]);
+  }, [update]);
 
   const getStartTime = (task) => {
-    if (!task.time) return Infinity; // Handle missing `time`
+    if (!task || !task.time) return Infinity;
     const [startTime] = task.time.split(" - ");
     const [hours, minutes] = startTime.split(":").map(Number);
     return hours * 60 + minutes;
@@ -49,18 +37,27 @@ const App = () => {
     ? tasks.filter((task) => getStartTime(task) > refTotalMinutes)
     : [];
 
+  useEffect(() => {
+    setInterval(() => {
+      setTime(
+        new Date().getHours() + ":" + (parseInt(new Date().getMinutes()) + 1)
+      );
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    const [startTaskTime] = filteredTasks[0]?.time?.split(" - ") || [];
+
+    if (startTaskTime == time) {
+      showNotification(filteredTasks[0]?.task, filteredTasks[0]?.time);
+    }
+  }, [time, filteredTasks]);
+
   return (
     <>
       <ImageBackground source={require("./assets/bg.png")}>
         <StatusBar hidden />
-        <ScrollView
-          style={styles.container}
-          overScrollMode="never"
-          refreshControl={
-            <RefreshControl refreshing={refresh} onRefresh={onRefresh} />
-          }
-        >
-          <NotificationExample />
+        <ScrollView style={styles.container} overScrollMode="never">
           <Top tasks={tasks} filteredTasks={filteredTasks} />
           <PendingTasks sortedTasks={sortedTasks} setUpdate={setUpdate} />
         </ScrollView>
