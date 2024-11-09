@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { ImageBackground, ScrollView, StyleSheet } from "react-native";
+import {
+  Appearance,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { Top, PendingTasks, AddTask } from "./components/components";
 import { api } from "./api/api";
 import { StatusBar } from "expo-status-bar";
 import showNotification from "./helpers/showNotification";
-
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [update, setUpdate] = useState(false);
@@ -38,6 +42,7 @@ const App = () => {
     : [];
 
   useEffect(() => {
+    Appearance.setColorScheme("light");
     setInterval(() => {
       setTime(
         new Date().getHours() + ":" + (parseInt(new Date().getMinutes()) + 1)
